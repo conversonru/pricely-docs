@@ -1,3 +1,4 @@
+import 'server-only'
 import { createClient } from '@/lib/supabase/server'
 import type { Client, Product } from '@/types'
 
@@ -9,7 +10,10 @@ export async function getClientBySlug(slug: string): Promise<Client | null> {
     .eq('slug', slug)
     .eq('payment_status', 'active')
     .single()
-  if (error) return null
+  if (error) {
+    if (error.code !== 'PGRST116') console.error('[catalog] getClientBySlug:', error.message)
+    return null
+  }
   return data as Client
 }
 
@@ -22,7 +26,10 @@ export async function getProducts(clientId: string): Promise<Product[]> {
     .eq('is_active', true)
     .order('sort_order', { ascending: true })
     .order('name', { ascending: true })
-  if (error) return []
+  if (error) {
+    console.error('[catalog] getProducts:', error.message)
+    return []
+  }
   return data as Product[]
 }
 
@@ -38,7 +45,10 @@ export async function getProductBySlug(
     .eq('slug', slug)
     .eq('is_active', true)
     .single()
-  if (error) return null
+  if (error) {
+    if (error.code !== 'PGRST116') console.error('[catalog] getProductBySlug:', error.message)
+    return null
+  }
   return data as Product
 }
 
@@ -50,6 +60,6 @@ export function buildWhatsAppUrl(phone: string, productName: string, sku: string
 
 export function buildTelegramUrl(username: string, productName: string, sku: string): string {
   const text = encodeURIComponent(`Здравствуйте! Хочу заказать: ${productName} (арт. ${sku})`)
-  const clean = username.replace('@', '')
+  const clean = username.replace(/^@/, '')
   return `https://t.me/${clean}?text=${text}`
 }
