@@ -8,10 +8,10 @@ export default function TMALayout({
 }) {
   return (
     <>
-      {/* Telegram WebApp SDK — обязательно для работы Mini App */}
+      {/* Telegram WebApp SDK — загружается до интерактивности страницы */}
       <Script
         src="https://telegram.org/js/telegram-web-app.js"
-        strategy="beforeInteractive"
+        strategy="afterInteractive"
       />
       <TMAInit />
       <div
