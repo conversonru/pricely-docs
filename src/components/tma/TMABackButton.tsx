@@ -7,9 +7,11 @@ export function TMABackButton() {
   const router = useRouter()
 
   useEffect(() => {
+    let cancelled = false
     let offClick: (() => void) | undefined
 
     import('@tma.js/sdk').then(({ backButton }) => {
+      if (cancelled) return
       try {
         if (!backButton.isMounted()) {
           backButton.mount()
@@ -25,10 +27,12 @@ export function TMABackButton() {
         }
       } catch {
         // Вне Telegram
+        console.warn('[TMA] backButton not available — not in Telegram context')
       }
     })
 
     return () => {
+      cancelled = true
       offClick?.()
     }
   }, [router])
