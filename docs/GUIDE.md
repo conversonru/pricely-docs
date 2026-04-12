@@ -1,6 +1,6 @@
 # Pricely — Руководство пользователя
 
-> Последнее обновление: 2026-04-11 · День 3 из 8 выполнен
+> Последнее обновление: 2026-04-12 · День 4 из 8 выполнен
 
 ---
 
@@ -22,8 +22,8 @@
 | День 1 | Тестовые данные в Google Sheets (25 товаров) | ✅ Готово |
 | День 2 | VPS + Supabase + схема базы данных | ✅ Готово |
 | День 3 | SEO-каталог (список + карточка товара) | ✅ Готово |
-| День 4 | Telegram Mini App | ⏳ Следующий |
-| День 5 | Загрузка Excel → автоматически в каталог | ⏳ Планируется |
+| День 4 | Telegram Mini App | ✅ Готово |
+| День 5 | Загрузка Excel → автоматически в каталог | ⏳ Следующий |
 | День 6 | Поддомены (`client.pricely.ru`) | ⏳ Планируется |
 | День 7 | Оплата тарифов через Prodamus | ⏳ Планируется |
 | День 8 | Тестирование и запуск | ⏳ Планируется |
@@ -49,7 +49,9 @@ npm install
 npm run dev
 ```
 
-Открыть в браузере: **http://localhost:3000/catalog/demo**
+Открыть в браузере:
+- **SEO-каталог:** http://localhost:3000/catalog/demo
+- **Telegram Mini App:** http://localhost:3000/tma/demo
 
 Ты увидишь демо-каталог с 25 промышленными товарами — тест работает через базу данных на сервере.
 
@@ -121,7 +123,8 @@ docker compose up -d
 
 **Демо-клиент:**
 - Slug: `demo`
-- Каталог: http://localhost:3000/catalog/demo
+- SEO-каталог: http://localhost:3000/catalog/demo
+- Telegram Mini App: http://localhost:3000/tma/demo
 - Telegram: `@pricely_demo`
 - WhatsApp: `+70000000000`
 
@@ -139,29 +142,50 @@ pricely-app/
 │
 ├── src/
 │   ├── app/
-│   │   ├── (catalog)/                  ← SEO-каталог (публичный)
+│   │   ├── (catalog)/                  ← SEO-каталог (SSR, Яндекс индексирует)
 │   │   │   ├── layout.tsx
 │   │   │   └── catalog/
 │   │   │       └── [clientSlug]/
 │   │   │           ├── page.tsx        ← список товаров
 │   │   │           └── [productSlug]/
 │   │   │               └── page.tsx    ← карточка товара
-│   │   └── (admin)/                    ← панель клиента (будет в День 6)
+│   │   │
+│   │   ├── (tma)/                      ← Telegram Mini App (Client Components)
+│   │   │   ├── layout.tsx              ← Telegram SDK + TMAInit
+│   │   │   └── tma/
+│   │   │       └── [clientSlug]/
+│   │   │           ├── page.tsx        ← список товаров в Telegram
+│   │   │           └── [productSlug]/
+│   │   │               └── page.tsx    ← карточка товара в Telegram
+│   │   │
+│   │   └── api/
+│   │       └── upload/
+│   │           └── route.ts            ← POST /api/upload (День 5)
 │   │
 │   ├── components/
-│   │   └── catalog/
-│   │       ├── ProductCard.tsx         ← карточка в сетке
-│   │       ├── ProductGrid.tsx         ← сетка + поиск + фильтры
-│   │       ├── OrderButton.tsx         ← кнопки WhatsApp / Telegram
-│   │       └── SchemaOrg.tsx           ← разметка для Яндекса
+│   │   ├── catalog/
+│   │   │   ├── ProductCard.tsx         ← карточка в сетке (SSR)
+│   │   │   ├── ProductGrid.tsx         ← сетка + поиск + фильтры
+│   │   │   ├── OrderButton.tsx         ← кнопки WhatsApp / Telegram (SSR)
+│   │   │   └── SchemaOrg.tsx           ← разметка для Яндекса (SSR)
+│   │   │
+│   │   └── tma/
+│   │       ├── TMAInit.tsx             ← инициализация Telegram SDK
+│   │       ├── TMABackButton.tsx       ← нативная кнопка «Назад» в Telegram
+│   │       └── TMAOrderButton.tsx      ← кнопка заказа через Telegram SDK
 │   │
 │   ├── lib/
-│   │   ├── catalog.ts                  ← запросы к БД
+│   │   ├── catalog.ts                  ← запросы к БД (server-only, SSR)
+│   │   ├── catalog-client.ts           ← запросы к БД (browser, TMA)
+│   │   ├── slugify.ts                  ← транслитерация RU→slug (День 5)
+│   │   ├── upload-service.ts           ← upsert товаров (День 5)
 │   │   └── supabase/
 │   │       ├── client.ts               ← клиент для браузера
 │   │       └── server.ts               ← клиент для сервера
 │   │
-│   └── types/index.ts                  ← TypeScript типы
+│   └── types/
+│       ├── index.ts                    ← TypeScript типы
+│       └── upload.ts                   ← типы для загрузки прайса (День 5)
 │
 ├── infra/
 │   ├── migrations/001_pricely_schema.sql  ← схема БД
@@ -179,7 +203,7 @@ pricely-app/
 
 ---
 
-## Как работает каталог
+## Как работает SEO-каталог
 
 ### Адреса страниц
 
@@ -203,6 +227,32 @@ pricely-app/
 
 ---
 
+## Как работает Telegram Mini App
+
+### Адреса страниц
+
+| Страница | URL | Описание |
+|----------|-----|----------|
+| Список товаров | `/tma/demo` | Каталог в стиле Telegram |
+| Карточка товара | `/tma/demo/vtulka-rezinovaya-50h30` | Товар с кнопкой заказа через Telegram |
+
+### Особенности TMA
+
+- Страницы используют **цвета темы Telegram** — светлую и тёмную, как у пользователя в настройках
+- **Нативная кнопка «Назад»** в шапке Telegram (не в браузере) — возвращает на список товаров
+- Кнопка заказа открывает чат с поставщиком напрямую внутри Telegram
+- TMA-страницы **не индексируются Яндексом** — это нормально, они для Telegram
+
+### Как открыть TMA в Telegram
+
+1. Создать бота через `@BotFather` → `/newbot`
+2. Подключить Web App: `/newapp` → указать URL `https://pricely.ru/tma/demo`
+3. Пользователи открывают каталог кнопкой внутри Telegram
+
+> В браузере TMA открывается как обычная страница (без Telegram-функций — это нормально для разработки).
+
+---
+
 ## Переменные окружения
 
 Файл `.env.local` (на твоём компьютере, не публикуется в git):
@@ -211,11 +261,17 @@ pricely-app/
 # Адрес Supabase на сервере
 NEXT_PUBLIC_SUPABASE_URL=http://72.56.5.159:8000
 
-# Публичный ключ (anon) — для чтения данных в каталоге
+# Публичный ключ (anon) — для чтения данных в каталоге и TMA
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 
 # Секретный ключ (service_role) — для записи данных из Make.com
 SUPABASE_SERVICE_ROLE_KEY=eyJ...
+
+# Telegram Bot Token (для настройки Mini App)
+TELEGRAM_BOT_TOKEN=
+
+# Секрет для webhook Make.com (генерируется в День 5)
+UPLOAD_SECRET=
 
 # Адрес приложения (меняется при деплое на Vercel)
 NEXT_PUBLIC_APP_URL=http://localhost:3000
@@ -284,3 +340,9 @@ NEXT_PUBLIC_APP_DOMAIN=pricely.ru
 
 **Q: Можно ли дать клиенту свой домен?**  
 Да, это планируется в День 6. Клиент сможет использовать `catalog.mycompany.ru` вместо `mycompany.pricely.ru`.
+
+**Q: Как Telegram Mini App отличается от обычного сайта-каталога?**  
+TMA открывается внутри Telegram как нативная панель, использует тему Telegram (светлую/тёмную), имеет нативную кнопку «Назад» и кнопки заказа, которые открывают чат напрямую в Telegram. Обычный каталог — для SEO и внешних пользователей.
+
+**Q: Почему `/tma/` страницы не индексируются Яндексом?**  
+TMA — Client Components (код работает в браузере), Яндекс-бот не выполняет JavaScript. Это нормально: TMA нужен для Telegram-трафика, а не для поискового.
