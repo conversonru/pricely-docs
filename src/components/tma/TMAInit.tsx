@@ -17,17 +17,21 @@ export function TMAInit() {
           sdk.miniApp.mount()
         }
 
-        if (sdk.themeParams.isSupported() && !sdk.themeParams.isMounted()) {
-          sdk.themeParams.mount()
-          sdk.themeParams.bindCssVars()
+        if (!sdk.themeParams.isMounted()) {
+          try {
+            sdk.themeParams.mount()
+            sdk.themeParams.bindCssVars()
+          } catch { /* themeParams not available */ }
         }
 
-        if (sdk.viewport.isSupported() && !sdk.viewport.isMounted()) {
-          await sdk.viewport.mount()
-          if (isMounted) {
-            sdk.viewport.expand()
-            sdk.viewport.bindCssVars()
-          }
+        if (!sdk.viewport.isMounted()) {
+          try {
+            await sdk.viewport.mount()
+            if (isMounted) {
+              sdk.viewport.expand()
+              sdk.viewport.bindCssVars()
+            }
+          } catch { /* viewport not available */ }
         }
       } catch (err) {
         console.warn('[TMA] Not in Telegram WebApp context — running in browser mode', err)
@@ -40,7 +44,6 @@ export function TMAInit() {
       isMounted = false
       import('@tma.js/sdk').then((sdk) => {
         try {
-          if (sdk.viewport.isMounted()) sdk.viewport.unmount()
           if (sdk.themeParams.isMounted()) sdk.themeParams.unmount()
           if (sdk.miniApp.isMounted()) sdk.miniApp.unmount()
         } catch { /* ignore cleanup errors */ }
