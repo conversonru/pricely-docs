@@ -22,7 +22,7 @@ export function OrderButton({ client, product }: OrderButtonProps) {
           rel="noopener noreferrer"
           className="flex items-center justify-center gap-2 w-full py-3 px-6 bg-[#0077FF] hover:bg-[#0066DD] text-white font-semibold rounded-xl transition-colors text-base"
         >
-          <img src="/max-logo.svg" alt="MAX" className="w-5 h-5 brightness-0 invert" />
+          <img src="/max-logo.png" alt="MAX" className="w-5 h-5" />
           Заказать в MAX
         </a>
       )}
