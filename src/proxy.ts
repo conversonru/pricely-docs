@@ -17,15 +17,22 @@ export function proxy(request: NextRequest): NextResponse {
     return new NextResponse(null, { status: 400 })
   }
 
+  const { pathname } = request.nextUrl
+
+  // Already a catalog path — pass through to avoid double-rewriting
+  // e.g. demo.price-on.ru/catalog/demo/product → keep as-is
+  if (pathname.startsWith('/catalog/')) {
+    return NextResponse.next()
+  }
+
   const url = request.nextUrl.clone()
-  const suffix = url.pathname === '/' ? '' : url.pathname
-  url.pathname = `/catalog/${slug}${suffix}`
+  // / → /catalog/{slug}
+  // /some-product → /catalog/{slug}/some-product
+  url.pathname = pathname === '/' ? `/catalog/${slug}` : `/catalog/${slug}${pathname}`
 
   return NextResponse.rewrite(url)
 }
 
 export const config = {
-  matcher: [
-    '/((?!api|_next/static|_next/image|favicon\\.ico).*)',
-  ],
+  matcher: ['/((?!api|_next/static|_next/image|favicon\\.ico).*)'],
 }
