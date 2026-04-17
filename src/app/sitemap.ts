@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { createClient } from '@/lib/supabase/server'
+import { slugify } from '@/lib/slugify'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const domain = process.env.NEXT_PUBLIC_APP_DOMAIN ?? 'price-on.ru'
@@ -35,7 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
     for (const cat of categorySet) {
       urls.push({
-        url: `https://${client.slug}.${domain}/category/${encodeURIComponent(cat)}`,
+        url: `https://${client.slug}.${domain}/category/${slugify(cat)}`,
         changeFrequency: 'daily',
         priority: 0.8,
       })

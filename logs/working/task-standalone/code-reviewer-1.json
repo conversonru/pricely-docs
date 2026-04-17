@@ -1,0 +1,68 @@
+{
+  "status": "approved_with_suggestions",
+  "summary": "The Prodamus webhook implementation is solid and security-conscious: HMAC verification uses constant-time comparison, the admin client pattern mirrors the established upload-service.ts pattern, and error handling correctly avoids failing the webhook on notification errors. Two major issues require attention: the route lacks a 'server-only' guard (unlike upload-service.ts), and payload fields order_num and sum lack input validation before use. Test coverage for the route handler itself is absent.",
+  "criticalIssues": [],
+  "suggestions": [
+    {
+      "file": "/Users/andreykudrasov/Claude/pricely-app/src/app/api/prodamus/route.ts",
+      "line": 1,
+      "severity": "major",
+      "category": "security",
+      "suggestion": "The route uses SUPABASE_SERVICE_ROLE_KEY directly and creates a service-role Supabase client. Unlike upload-service.ts which is protected by 'import \"server-only\"', this file has no such guard. While Next.js route handlers are inherently server-side, the createAdminClient function is not guarded from being imported into a shared module that could be accidentally bundled client-side. Add 'import \"server-only\"' at the top of the file, consistent with the established pattern in upload-service.ts.",
+      "benefit": "Prevents accidental service-role key exposure in client bundles; aligns with established project pattern",
+      "optional": false
+    },
+    {
+      "file": "/Users/andreykudrasov/Claude/pricely-app/src/app/api/prodamus/route.ts",
+      "line": 41,
+      "severity": "major",
+      "category": "error-handling",
+      "suggestion": "clientSlug is taken directly from payload.order_num and sum from payload.sum without any validation. If order_num is missing or empty, the Supabase query runs with an undefined/empty slug, produces a 404, and triggers a misleading admin notification. If sum is non-numeric, Number() returns NaN, which is passed to parseTariff. Add explicit guards after the signature check: validate that order_num is a non-empty string and that Number(payload.sum) is a finite positive number, returning 400 for malformed payloads.",
+      "benefit": "Prevents misleading 404 notifications for malformed non-Prodamus webhook calls; protects parseTariff from NaN input",
+      "optional": false
+    },
+    {
+      "file": "/Users/andreykudrasov/Claude/pricely-app/src/lib/__tests__/prodamus.test.ts",
+      "line": 1,
+      "severity": "major",
+      "category": "testing",
+      "suggestion": "Unit tests for verifySign and parseTariff are thorough, but the route handler in route.ts has no tests at all. The most critical untested path is: valid signature + successful payment + unknown sum (parseTariff returns null) — in this case the route silently activates the client without updating the tariff field, which may be intentional but is unverified. Add at least one mocked test for the full POST handler covering the null-tariff edge case and the DB update call.",
+      "benefit": "Catches regressions in the payment activation flow and verifies the null-tariff behavior is intentional",
+      "optional": false
+    },
+    {
+      "file": "/Users/andreykudrasov/Claude/pricely-app/src/app/api/prodamus/route.ts",
+      "line": 96,
+      "severity": "minor",
+      "category": "best-practices",
+      "suggestion": "The GET handler returns 405 which is correct. Per RFC 9110, a 405 response should include an 'Allow' header listing permitted methods. Add headers: { Allow: 'POST' } to the response.",
+      "benefit": "RFC compliance; helps automated tools diagnose integration issues",
+      "optional": true
+    },
+    {
+      "file": "/Users/andreykudrasov/Claude/pricely-app/src/lib/prodamus.ts",
+      "line": 32,
+      "severity": "minor",
+      "category": "readability",
+      "suggestion": "The type assertion '(Object.entries(TARIFF_PRICES) as [Tariff, number][])' is correct and necessary because TypeScript widens Object.entries return type to [string, number][]. Add a brief inline comment explaining this so future maintainers do not remove it thinking it is unnecessary.",
+      "benefit": "Prevents inadvertent removal of a load-bearing type cast",
+      "optional": true
+    },
+    {
+      "file": "/Users/andreykudrasov/Claude/pricely-app/src/lib/telegram-notify.ts",
+      "line": 15,
+      "severity": "minor",
+      "category": "best-practices",
+      "suggestion": "The fetch call to the Telegram API has no timeout. In a webhook handler, a slow or unresponsive Telegram API will hold the response open indefinitely. Add an AbortController with a 5-second timeout: const controller = new AbortController(); setTimeout(() => controller.abort(), 5000); then pass signal: controller.signal to fetch.",
+      "benefit": "Prevents webhook response timeouts caused by slow Telegram API responses",
+      "optional": true
+    }
+  ],
+  "metrics": {
+    "filesReviewed": 5,
+    "criticalIssuesCount": 0,
+    "majorIssuesCount": 3,
+    "minorIssuesCount": 3,
+    "testCoverageAssessment": "insufficient"
+  }
+}

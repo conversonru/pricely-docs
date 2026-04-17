@@ -1,30 +1,33 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { getClientBySlug, getProductsByCategory, getCategories } from '@/lib/catalog'
+import { getClientBySlug, getProductsByCategory, getCategories, getCategoryBySlug } from '@/lib/catalog'
 import { ProductGrid } from '@/components/catalog/ProductGrid'
+import { slugify } from '@/lib/slugify'
 
 interface PageProps {
   params: Promise<{ clientSlug: string; category: string }>
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { clientSlug, category } = await params
-  const decodedCategory = decodeURIComponent(category)
+  const { clientSlug, category: categorySlug } = await params
   const client = await getClientBySlug(clientSlug)
   if (!client) return { title: 'Каталог не найден' }
 
+  const categoryName = await getCategoryBySlug(client.id, categorySlug)
+  if (!categoryName) return { title: 'Категория не найдена' }
+
   const domain = process.env.NEXT_PUBLIC_APP_DOMAIN ?? 'price-on.ru'
-  const canonicalUrl = `https://${clientSlug}.${domain}/category/${encodeURIComponent(decodedCategory)}`
+  const canonicalUrl = `https://${clientSlug}.${domain}/category/${slugify(categoryName)}`
 
   return {
-    title: `${decodedCategory} — купить оптом | ${client.company_name}`,
-    description: `Оптовые поставки: ${decodedCategory}. Актуальные цены и наличие. ${client.company_name}.`,
+    title: `${categoryName} — купить оптом | ${client.company_name}`,
+    description: `Оптовые поставки: ${categoryName}. Актуальные цены и наличие. ${client.company_name}.`,
     alternates: {
       canonical: canonicalUrl,
     },
     openGraph: {
-      title: `${decodedCategory} — ${client.company_name}`,
-      description: `Оптовые поставки: ${decodedCategory}`,
+      title: `${categoryName} — ${client.company_name}`,
+      description: `Оптовые поставки: ${categoryName}`,
       type: 'website',
       url: canonicalUrl,
     },
@@ -32,14 +35,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function CategoryPage({ params }: PageProps) {
-  const { clientSlug, category } = await params
-  const decodedCategory = decodeURIComponent(category)
+  const { clientSlug, category: categorySlug } = await params
 
   const client = await getClientBySlug(clientSlug)
   if (!client) notFound()
 
+  const categoryName = await getCategoryBySlug(client.id, categorySlug)
+  if (!categoryName) notFound()
+
   const [products, categories] = await Promise.all([
-    getProductsByCategory(client.id, decodedCategory),
+    getProductsByCategory(client.id, categoryName),
     getCategories(client.id),
   ])
 
@@ -51,7 +56,7 @@ export default async function CategoryPage({ params }: PageProps) {
         products={products}
         clientSlug={clientSlug}
         categories={categories}
-        activeCategory={decodedCategory}
+        activeCategory={categoryName}
       />
     </main>
   )

@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { ProductCard } from './ProductCard'
+import { slugify } from '@/lib/slugify'
 import type { Product } from '@/types'
 
 interface ProductGridProps {
@@ -50,7 +51,7 @@ export function ProductGrid({ products, clientSlug, categories, activeCategory }
           {categories.map((cat) => (
             <Link
               key={cat}
-              href={`/catalog/${clientSlug}/category/${encodeURIComponent(cat)}`}
+              href={`/catalog/${clientSlug}/category/${slugify(cat)}`}
               className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                 activeCategory === cat
                   ? 'bg-blue-600 text-white'

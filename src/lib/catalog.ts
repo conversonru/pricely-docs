@@ -1,6 +1,7 @@
 import 'server-only'
 import { createClient } from '@/lib/supabase/server'
 import type { Client, Product } from '@/types'
+import { slugify } from '@/lib/slugify'
 
 export async function getClientBySlug(slug: string): Promise<Client | null> {
   const supabase = await createClient()
@@ -46,6 +47,15 @@ export async function getCategories(clientId: string): Promise<string[]> {
   }
   const unique = Array.from(new Set((data ?? []).map((r) => r.category).filter(Boolean))) as string[]
   return unique.sort()
+}
+
+/** Находит оригинальное название категории по её slug (транслитерации) */
+export async function getCategoryBySlug(
+  clientId: string,
+  categorySlug: string
+): Promise<string | null> {
+  const categories = await getCategories(clientId)
+  return categories.find((cat) => slugify(cat) === categorySlug) ?? null
 }
 
 export async function getProductsByCategory(

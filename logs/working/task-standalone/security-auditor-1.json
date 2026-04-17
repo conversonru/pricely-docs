@@ -1,0 +1,101 @@
+{
+  "status": "changes_required",
+  "summary": {
+    "totalFindings": 9,
+    "critical": 1,
+    "major": 5,
+    "minor": 3
+  },
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "A01: Broken Access Control",
+      "title": "Payment status activated without verifying payment amount matches any known tariff",
+      "description": "In route.ts lines 61–71, parseTariff() may return null when the sum does not match any TARIFF_PRICES entry (e.g., partial payment, fraudulent amount), yet the code still sets payment_status to 'active' unconditionally (line 69). An attacker who crafts a valid HMAC-signed webhook (or a Prodamus test event) with an arbitrary sum that is not 990/1490/2490 will activate any client account for free, or extend its billing period by 30 days. The tariff field is simply left unchanged (the spread condition `...(tariff && { tariff })` is falsy), so the account becomes active at whatever tariff it previously held.",
+      "location": "src/app/api/prodamus/route.ts:61-71",
+      "impact": "Any client account can be fraudulently activated without paying the correct amount. This is a direct revenue-bypass vulnerability. An insider at Prodamus, or anyone who reverse-engineers the HMAC secret, can send a payment_status=success webhook with sum=1 to activate any account.",
+      "recommendation": "Reject the webhook when parseTariff() returns null. Return a 400 or 422 with a neutral error message and alert the admin:\n\n```typescript\nconst tariff = parseTariff(sum)\nif (!tariff) {\n  await notifyAdmin(`⚠️ Webhook: unrecognised amount ${sum} ₽ for ${clientSlug}`)\n  return NextResponse.json({ error: 'invalid amount' }, { status: 422 })\n}\n```",
+      "cwe": "CWE-840"
+    },
+    {
+      "severity": "major",
+      "category": "A03: Injection",
+      "title": "URLSearchParams parsing accepts repeated keys — last value wins, undermining signature verification",
+      "description": "The body is parsed with `Object.fromEntries(new URLSearchParams(text))` (route.ts line 26). URLSearchParams silently drops duplicate keys, keeping only the last one. The HMAC is then computed over the deduplicated object. An attacker who can replay or modify the webhook (man-in-the-middle, replay of a previously seen valid request with appended fields) could append a second `order_num=victim_slug` parameter after the legitimate one. The signature was computed over the first value, but the code uses the last. This creates a signature/action mismatch window depending on Prodamus' exact serialization order.",
+      "location": "src/app/api/prodamus/route.ts:25-28",
+      "impact": "Potential redirect of a payment activation to a different client slug than the one covered by the HMAC. Severity depends on how strictly Prodamus enforces field uniqueness.",
+      "recommendation": "Parse the raw body into a string map that preserves the exact set of key-value pairs used during signing, and reject any payload containing duplicate keys:\n\n```typescript\nconst params = new URLSearchParams(text)\nconst seen = new Set<string>()\nfor (const key of params.keys()) {\n  if (seen.has(key)) {\n    return NextResponse.json({ error: 'invalid body' }, { status: 400 })\n  }\n  seen.add(key)\n}\nconst payload = Object.fromEntries(params)\n```",
+      "cwe": "CWE-20"
+    },
+    {
+      "severity": "major",
+      "category": "A07: Auth Failures",
+      "title": "No replay-attack protection — valid webhooks can be re-submitted indefinitely",
+      "description": "The webhook has no nonce, timestamp, or idempotency check. Any previously captured (e.g., from logs, network tap, or Prodamus resend) valid request body can be re-POSTed an unlimited number of times. Each replay resets next_billing_date to now+30 days and re-fires the admin Telegram notification. More critically, replaying a payment for a client who is on 'telegram' tier (990 ₽) would keep re-activating them without additional payment.",
+      "location": "src/app/api/prodamus/route.ts:15-93",
+      "impact": "An attacker who intercepts or logs one legitimate webhook can replay it to repeatedly extend a client's subscription without paying. Also enables DoS via flood of admin Telegram messages.",
+      "recommendation": "1. Check for a timestamp field in the payload and reject requests older than 5 minutes:\n```typescript\nconst ts = Number(payload.date_create ?? payload.timestamp)\nif (!ts || Math.abs(Date.now() / 1000 - ts) > 300) {\n  return NextResponse.json({ error: 'stale request' }, { status: 400 })\n}\n```\n2. Store processed payment IDs (payload.payment_id or similar) in a short-lived Redis/DB set and reject duplicates.",
+      "cwe": "CWE-294"
+    },
+    {
+      "severity": "major",
+      "category": "A04: Insecure Design",
+      "title": "order_num (client slug) is the sole payment identifier — trivially guessable",
+      "description": "The webhook maps Prodamus' order_num field directly to the client slug (route.ts line 41). Client slugs are public — they appear in URLs such as `{slug}.pricely.ru`. Anyone who knows a target client's slug can submit a payment for them by referencing that slug in a legitimate purchase, causing the webhook to activate or modify the wrong account. The design uses a mutable, guessable value as the authorization key for an account update.",
+      "location": "src/app/api/prodamus/route.ts:41",
+      "impact": "A paying customer can knowingly or accidentally activate a competitor's account by entering the competitor's slug as the order reference. If Prodamus allows customers to set order_num freely, this is directly exploitable.",
+      "recommendation": "Use the client UUID (not the public slug) as order_num, or append a cryptographic per-payment token: `order_num = ${client.id}:${randomUUID()}`. Store the expected mapping before redirecting to Prodamus and validate it in the webhook.",
+      "cwe": "CWE-639"
+    },
+    {
+      "severity": "major",
+      "category": "A09: Security Logging and Monitoring",
+      "title": "Client slug and DB error message leaked in 404/500 JSON responses",
+      "description": "Route.ts line 57 returns `{ error: 'client not found' }` with status 404. While the body itself is generic, the notifyAdmin call at line 54–57 logs the raw clientSlug from the payload into Telegram. More seriously, line 78 forwards `updateError.message` (a raw Supabase/PostgreSQL error string) into the Telegram notification. If Telegram is compromised or the admin chat is shared, internal DB error details are exposed. Additionally the 404 response confirms that a given slug does not exist, enabling client enumeration.",
+      "location": "src/app/api/prodamus/route.ts:54-57, 77-80",
+      "impact": "Enumeration of valid client slugs via 404 vs 200 responses. Potential disclosure of internal database error messages to admin channel which may be monitored by third parties.",
+      "recommendation": "Return a uniform 200 OK for all post-signature-verification errors to prevent enumeration. Sanitize DB error messages before forwarding to Telegram (log full error server-side only):\n```typescript\nconsole.error('[prodamus] DB update failed:', updateError)\nawait notifyAdmin(`🚨 Webhook DB error for ${clientSlug}`)\nreturn NextResponse.json({ ok: true }, { status: 200 })\n```",
+      "cwe": "CWE-209"
+    },
+    {
+      "severity": "major",
+      "category": "A02: Cryptographic Failures",
+      "title": "HMAC verification silently passes when sign field is any valid hex string of the correct length if secret is empty string",
+      "description": "verifySign() checks `if (!sign) return false` (prodamus.ts line 12), which correctly rejects a missing sign. However, the secret is retrieved from the environment and passed directly without any minimum-length validation. If PRODAMUS_SECRET_KEY is set to an empty string '' in production (not caught by the `!secret` check in route.ts line 16-19 since '' is falsy — actually this IS caught), or a very short/weak value, HMAC-SHA256 with a weak key provides reduced security. More critically: the route.ts check `if (!secret)` at line 16 uses falsy check, so an empty string IS rejected. However a single-character secret would pass this guard.",
+      "location": "src/lib/prodamus.ts:10-28, src/app/api/prodamus/route.ts:16-19",
+      "impact": "A weak secret (single character, short string) provides trivially brute-forceable HMAC verification, allowing attackers to forge webhook signatures.",
+      "recommendation": "Enforce a minimum secret length at startup:\n```typescript\nif (!secret || secret.length < 32) {\n  console.error('[prodamus] PRODAMUS_SECRET_KEY must be at least 32 characters')\n  return NextResponse.json({ error: 'internal error' }, { status: 500 })\n}\n```",
+      "cwe": "CWE-326"
+    },
+    {
+      "severity": "minor",
+      "category": "A05: Security Misconfiguration",
+      "title": "No rate limiting on the webhook endpoint",
+      "description": "The POST /api/prodamus endpoint has no rate limiting. An attacker can flood it with requests bearing invalid signatures to enumerate timing differences (though timingSafeEqual mitigates timing attacks, it does not prevent resource exhaustion) or to flood the admin's Telegram chat with error notifications via the notifyAdmin call triggered on client-not-found paths.",
+      "location": "src/app/api/prodamus/route.ts:15-93",
+      "impact": "Denial of service via Telegram notification spam; compute cost from repeated HMAC computations; potential Supabase connection pool exhaustion.",
+      "recommendation": "Add an IP-based rate limit (e.g., via Vercel Edge middleware or a rate-limit library): allow a maximum of 60 requests per minute per IP. Also move the notifyAdmin call for client-not-found to only trigger after signature verification succeeds (already the case here) but add a circuit-breaker for notification floods.",
+      "cwe": "CWE-770"
+    },
+    {
+      "severity": "minor",
+      "category": "A10: SSRF",
+      "title": "Telegram bot token injected directly into URL — token exposure risk in server logs",
+      "description": "telegram-notify.ts line 15 constructs the Telegram API URL as a template literal with the bot token embedded in the path: `https://api.telegram.org/bot${token}/sendMessage`. Many web servers, reverse proxies, and observability platforms (Vercel logs, Nginx, Datadog) log outbound request URLs. This causes the bot token to appear in plain text in log streams.",
+      "location": "src/lib/telegram-notify.ts:15",
+      "impact": "If server-side logs are accessed by an attacker (log aggregation system compromise, misconfigured log retention), the Telegram bot token is directly readable, allowing the attacker to send messages, read chat history (if the bot has access), or take over the bot.",
+      "recommendation": "Keep the URL structure as-is (it is the correct Telegram Bot API format), but ensure log scrubbing is configured to redact bot tokens. Alternatively, pass the token via a POST header or body if Telegram's API supports it (it does not). Mitigate by ensuring Vercel log access is restricted and rotate tokens if logs are ever breached.",
+      "cwe": "CWE-532"
+    },
+    {
+      "severity": "minor",
+      "category": "best-practice",
+      "title": "parseTariff uses floating-point equality comparison for monetary amounts",
+      "description": "parseTariff() (prodamus.ts line 32) compares `price === sum` where sum is derived from `Number(payload.sum)` (route.ts line 42). If Prodamus ever sends sum as '990.00' or '1490.5' due to formatting, Number() produces 990, 1490.5 respectively, and the strict equality check against integer TARIFF_PRICES values will fail or mismatch. Floating-point representation of monetary values is a known source of subtle bugs.",
+      "location": "src/lib/prodamus.ts:31-36, src/app/api/prodamus/route.ts:42",
+      "impact": "parseTariff returns null for a valid payment amount, causing the webhook to either reject a legitimate payment (if finding #1 is fixed) or activate an account without assigning a tariff.",
+      "recommendation": "Parse sum as an integer in kopecks, or round before comparison:\n```typescript\nconst sum = Math.round(Number(payload.sum))\n```\nAlso validate that payload.sum is a valid numeric string before converting:\n```typescript\nif (!/^\\d+(\\.\\d{1,2})?$/.test(payload.sum ?? '')) {\n  return NextResponse.json({ error: 'invalid body' }, { status: 400 })\n}\n```",
+      "cwe": "CWE-681"
+    }
+  ]
+}
