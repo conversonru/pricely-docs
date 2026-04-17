@@ -9,6 +9,7 @@ export interface Client {
   contact_name: string
   telegram: string | null
   whatsapp: string | null
+  vk: string | null
   email: string
   tariff: Tariff
   products_limit: number    // 100 / 500 / -1 (безлимит)

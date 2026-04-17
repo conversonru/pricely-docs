@@ -62,3 +62,9 @@ export function buildTelegramUrl(username: string, productName: string, sku: str
   const clean = username.replace(/^@/, '')
   return `https://t.me/${clean}?text=${text}`
 }
+
+export function buildMaxUrl(vkId: string, productName: string, sku: string): string {
+  const text = encodeURIComponent(`Здравствуйте! Хочу заказать: ${productName} (арт. ${sku})`)
+  const clean = vkId.replace(/^@/, '')
+  return `https://vk.me/${clean}?text=${text}`
+}
