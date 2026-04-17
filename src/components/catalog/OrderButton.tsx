@@ -20,10 +20,7 @@ export function OrderButton({ client, product }: OrderButtonProps) {
           href={buildMaxUrl(client.vk!, product.name, product.sku)}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 w-full py-3 px-6 text-white font-semibold rounded-xl transition-colors text-base"
-          style={{ backgroundColor: '#0077FF' }}
-          onMouseOver={e => (e.currentTarget.style.backgroundColor = '#0066DD')}
-          onMouseOut={e => (e.currentTarget.style.backgroundColor = '#0077FF')}
+          className="flex items-center justify-center gap-2 w-full py-3 px-6 bg-[#0077FF] hover:bg-[#0066DD] text-white font-semibold rounded-xl transition-colors text-base"
         >
           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M15.07 2H8.93C3.33 2 2 3.33 2 8.93v6.14C2 20.67 3.33 22 8.93 22h6.14C20.67 22 22 20.67 22 15.07V8.93C22 3.33 20.67 2 15.07 2zm3.08 13.27h-1.5c-.57 0-.74-.45-1.76-1.49-.88-.86-1.27-.98-1.49-.98-.3 0-.39.09-.39.51v1.36c0 .36-.11.57-1.05.57-1.55 0-3.26-.94-4.47-2.7-1.82-2.55-2.31-4.46-2.31-4.85 0-.22.09-.42.51-.42h1.5c.38 0 .52.17.67.57.74 2.12 1.97 3.98 2.48 3.98.19 0 .28-.09.28-.57V9.38c-.06-1.03-.6-1.12-.6-1.49 0-.18.15-.36.39-.36h2.36c.32 0 .43.17.43.54v2.9c0 .32.14.43.23.43.19 0 .35-.11.7-.47 1.08-1.21 1.85-3.07 1.85-3.07.1-.22.28-.42.66-.42h1.5c.45 0 .55.23.45.54-.19.88-2.03 3.47-2.03 3.47-.16.26-.22.38 0 .67.16.22.68.67 1.03 1.08.64.73 1.13 1.34 1.26 1.76.14.41-.08.62-.51.62z"/>
