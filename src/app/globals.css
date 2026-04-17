@@ -126,5 +126,68 @@
   }
   html {
     @apply font-sans;
+    scroll-behavior: smooth;
   }
+}
+
+/* ── Landing keyframe animations ─────────────────────────── */
+
+@keyframes lp-float {
+  0%, 100% { transform: translateY(0px) rotate(-1deg); }
+  50%       { transform: translateY(-12px) rotate(1deg); }
+}
+
+@keyframes lp-slide-up {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes lp-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes lp-glow-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50%       { opacity: 0.55; transform: scale(1.08); }
+}
+
+@keyframes lp-shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes lp-badge-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.lp-float        { animation: lp-float 5s ease-in-out infinite; }
+.lp-slide-up     { animation: lp-slide-up 0.65s cubic-bezier(0.22,1,0.36,1) both; }
+.lp-fade-in      { animation: lp-fade-in 0.5s ease both; }
+.lp-glow-pulse   { animation: lp-glow-pulse 4s ease-in-out infinite; }
+.lp-badge-in     { animation: lp-badge-in 0.5s cubic-bezier(0.22,1,0.36,1) both; }
+
+.lp-delay-1 { animation-delay: 0.1s; }
+.lp-delay-2 { animation-delay: 0.2s; }
+.lp-delay-3 { animation-delay: 0.35s; }
+.lp-delay-4 { animation-delay: 0.5s; }
+.lp-delay-5 { animation-delay: 0.65s; }
+.lp-delay-6 { animation-delay: 0.8s; }
+
+.lp-shimmer-text {
+  background: linear-gradient(90deg, #F6A822 0%, #FBBF24 40%, #ffffff 50%, #FBBF24 60%, #F6A822 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: lp-shimmer 4s linear infinite;
+}
+
+.lp-card-hover {
+  transition: transform 0.25s cubic-bezier(0.22,1,0.36,1), box-shadow 0.25s ease;
+}
+.lp-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -12px rgba(0,0,0,0.15);
 }
