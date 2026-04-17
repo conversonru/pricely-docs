@@ -17,15 +17,23 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const product = await getProductBySlug(client.id, productSlug)
   if (!product) return {}
 
+  const domain = process.env.NEXT_PUBLIC_APP_DOMAIN ?? 'price-on.ru'
+  const canonicalUrl = `https://${clientSlug}.${domain}/${productSlug}`
+
   return {
     title: product.seo_title ?? `${product.name} — купить оптом | ${client.company_name}`,
     description:
       product.seo_description ??
       `${product.name} по цене ${product.price.toLocaleString('ru-RU')} ₽/${product.unit}. Оптовые поставки. ${client.company_name}.`,
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
       title: product.seo_title ?? product.name,
+      description: product.seo_description ?? `${product.name} — ${client.company_name}`,
       images: product.image_url ? [{ url: product.image_url }] : [],
       type: 'website',
+      url: canonicalUrl,
     },
   }
 }
@@ -45,7 +53,8 @@ export default async function ProductPage({ params }: PageProps) {
       ? 'text-yellow-600'
       : 'text-red-500'
 
-  const pageUrl = `${process.env.NEXT_PUBLIC_APP_URL}/catalog/${clientSlug}/${productSlug}`
+  const domain = process.env.NEXT_PUBLIC_APP_DOMAIN ?? 'price-on.ru'
+  const pageUrl = `https://${clientSlug}.${domain}/${productSlug}`
 
   return (
     <>

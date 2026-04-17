@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /catalog/
+Disallow: /tma/
+Disallow: /api/
+Disallow: /_next/
+
+Sitemap: https://demo.price-on.ru/sitemap.xml

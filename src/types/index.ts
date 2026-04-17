@@ -11,6 +11,10 @@ export interface Client {
   whatsapp: string | null
   vk: string | null
   email: string
+  phone: string | null
+  address: string | null
+  inn: string | null
+  ogrn: string | null
   tariff: Tariff
   products_limit: number    // 100 / 500 / -1 (безлимит)
   custom_domain: string | null
