@@ -33,6 +33,41 @@ export async function getProducts(clientId: string): Promise<Product[]> {
   return data as Product[]
 }
 
+export async function getCategories(clientId: string): Promise<string[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('products')
+    .select('category')
+    .eq('client_id', clientId)
+    .eq('is_active', true)
+  if (error) {
+    console.error('[catalog] getCategories:', error.message)
+    return []
+  }
+  const unique = Array.from(new Set((data ?? []).map((r) => r.category).filter(Boolean))) as string[]
+  return unique.sort()
+}
+
+export async function getProductsByCategory(
+  clientId: string,
+  category: string
+): Promise<Product[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('client_id', clientId)
+    .eq('category', category)
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true })
+    .order('name', { ascending: true })
+  if (error) {
+    console.error('[catalog] getProductsByCategory:', error.message)
+    return []
+  }
+  return data as Product[]
+}
+
 export async function getProductBySlug(
   clientId: string,
   slug: string

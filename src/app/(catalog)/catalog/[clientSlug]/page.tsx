@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { getClientBySlug, getProducts } from '@/lib/catalog'
+import { getClientBySlug, getProducts, getCategories } from '@/lib/catalog'
 import { ProductGrid } from '@/components/catalog/ProductGrid'
 
 interface PageProps {
@@ -35,16 +35,18 @@ export default async function CatalogPage({ params }: PageProps) {
   const client = await getClientBySlug(clientSlug)
   if (!client) notFound()
 
-  const products = await getProducts(client.id)
+  const [products, categories] = await Promise.all([
+    getProducts(client.id),
+    getCategories(client.id),
+  ])
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-8">
-      <div className="mb-6">
-        <p className="text-gray-500 text-sm">
-          {products.length} товаров · Оптовые поставки
-        </p>
-      </div>
-      <ProductGrid products={products} clientSlug={clientSlug} />
+      <ProductGrid
+        products={products}
+        clientSlug={clientSlug}
+        categories={categories}
+      />
     </main>
   )
 }

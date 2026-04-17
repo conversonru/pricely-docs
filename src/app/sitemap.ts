@@ -24,10 +24,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     const { data: products } = await supabase
       .from('products')
-      .select('slug, updated_at')
+      .select('slug, category, updated_at')
       .eq('client_id', client.id)
       .eq('is_active', true)
 
+    // Страницы категорий
+    const categorySet = new Set<string>()
+    for (const product of products ?? []) {
+      if (product.category) categorySet.add(product.category)
+    }
+    for (const cat of categorySet) {
+      urls.push({
+        url: `https://${client.slug}.${domain}/category/${encodeURIComponent(cat)}`,
+        changeFrequency: 'daily',
+        priority: 0.8,
+      })
+    }
+
+    // Страницы товаров
     for (const product of products ?? []) {
       urls.push({
         url: `https://${client.slug}.${domain}/${product.slug}`,

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { ProductCard } from './ProductCard'
 import type { Product } from '@/types'
@@ -8,27 +9,22 @@ import type { Product } from '@/types'
 interface ProductGridProps {
   products: Product[]
   clientSlug: string
+  categories: string[]
+  activeCategory?: string   // передаётся с SSR-страницы категории
 }
 
-export function ProductGrid({ products, clientSlug }: ProductGridProps) {
+export function ProductGrid({ products, clientSlug, categories, activeCategory }: ProductGridProps) {
   const [search, setSearch] = useState('')
-  const [category, setCategory] = useState('all')
-
-  const categories = useMemo(() => {
-    const unique = Array.from(new Set(products.map((p) => p.category).filter(Boolean)))
-    return unique.sort()
-  }, [products])
 
   const filtered = useMemo(() => {
-    return products.filter((p) => {
-      const matchSearch =
-        search === '' ||
-        p.name.toLowerCase().includes(search.toLowerCase()) ||
-        p.sku.toLowerCase().includes(search.toLowerCase())
-      const matchCat = category === 'all' || p.category === category
-      return matchSearch && matchCat
-    })
-  }, [products, search, category])
+    if (search === '') return products
+    const q = search.toLowerCase()
+    return products.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.sku.toLowerCase().includes(q)
+    )
+  }, [products, search])
 
   return (
     <div className="flex flex-col gap-6">
@@ -41,42 +37,44 @@ export function ProductGrid({ products, clientSlug }: ProductGridProps) {
           className="sm:max-w-sm bg-white"
         />
         <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setCategory('all')}
+          <Link
+            href={`/catalog/${clientSlug}`}
             className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              category === 'all'
+              !activeCategory
                 ? 'bg-blue-600 text-white'
                 : 'bg-white text-gray-600 border hover:bg-gray-50'
             }`}
           >
             Все
-          </button>
+          </Link>
           {categories.map((cat) => (
-            <button
+            <Link
               key={cat}
-              onClick={() => setCategory(cat)}
+              href={`/catalog/${clientSlug}/category/${encodeURIComponent(cat)}`}
               className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                category === cat
+                activeCategory === cat
                   ? 'bg-blue-600 text-white'
                   : 'bg-white text-gray-600 border hover:bg-gray-50'
               }`}
             >
               {cat}
-            </button>
+            </Link>
           ))}
         </div>
       </div>
 
       {/* Count */}
       <p className="text-sm text-gray-500">
-        Показано {filtered.length} из {products.length} товаров
+        {search
+          ? `Найдено ${filtered.length} из ${products.length} товаров`
+          : `${products.length} товаров${activeCategory ? ` · ${activeCategory}` : ''}`}
       </p>
 
       {/* Grid */}
       {filtered.length === 0 ? (
         <div className="text-center py-16 text-gray-400">
           <p className="text-lg">Ничего не найдено</p>
-          <p className="text-sm mt-1">Попробуйте изменить запрос или фильтр</p>
+          <p className="text-sm mt-1">Попробуйте изменить запрос</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
