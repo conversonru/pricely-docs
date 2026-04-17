@@ -63,8 +63,8 @@ export function buildTelegramUrl(username: string, productName: string, sku: str
   return `https://t.me/${clean}?text=${text}`
 }
 
-export function buildMaxUrl(vkId: string, productName: string, sku: string): string {
+export function buildMaxUrl(maxLink: string, productName: string, sku: string): string {
   const text = encodeURIComponent(`Здравствуйте! Хочу заказать: ${productName} (арт. ${sku})`)
-  const clean = vkId.replace(/^@/, '')
-  return `https://vk.me/${clean}?text=${text}`
+  const clean = maxLink.replace(/^@/, '').replace(/^https?:\/\/max\.ru\/u\//, '')
+  return `https://max.ru/u/${clean}?text=${text}`
 }
