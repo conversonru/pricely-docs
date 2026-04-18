@@ -170,7 +170,7 @@ export default function HomePage() {
                   style={{ fontFamily: 'var(--font-syne)' }}
                 >
                   <span className="lp-shimmer-text">Создайте сайт</span>{' '}
-                  с каталогом товаров из Excel{' '}
+                  из вашего прайса в Excel{' '}
                   <span className="lp-shimmer-text">за&nbsp;5&nbsp;минут</span>
                 </h1>
 
