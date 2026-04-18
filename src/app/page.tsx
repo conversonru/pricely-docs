@@ -169,8 +169,8 @@ export default function HomePage() {
                   className="lp-slide-up lp-delay-1 text-4xl sm:text-5xl font-extrabold text-white leading-[1.1] tracking-tight"
                   style={{ fontFamily: 'var(--font-syne)' }}
                 >
-                  Создайте сайт с каталогом товаров из вашего прайса в Excel{' '}
-                  <span className="lp-shimmer-text">за&nbsp;10&nbsp;минут</span>
+                  <span className="lp-shimmer-text">Создайте сайт</span>{' '}
+                  с каталогом товаров из Excel за 10 минут
                 </h1>
 
                 <p className="lp-slide-up lp-delay-2 mt-5 text-lg text-slate-400 leading-relaxed max-w-lg">
