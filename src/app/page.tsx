@@ -7,9 +7,9 @@ import {
 import { TARIFF_PRICES } from '@/types'
 
 export const metadata: Metadata = {
-  title: 'Price-on — сайт-каталог из Excel за 10 минут для оптовых компаний',
+  title: 'Price-on — сайт-каталог из Excel за 5 минут для оптовых компаний',
   description:
-    'Создайте сайт с каталогом товаров из вашего прайса в Excel за 10 минут. SEO-каталог в Яндексе и Telegram Mini App для заказов. Без программистов.',
+    'Создайте сайт с каталогом товаров из вашего прайса в Excel за 5 минут. SEO-каталог в Яндексе и Telegram Mini App для заказов. Без программистов.',
 }
 
 /* ── Маленькие переиспользуемые элементы ───────────────── */
@@ -170,11 +170,12 @@ export default function HomePage() {
                   style={{ fontFamily: 'var(--font-syne)' }}
                 >
                   <span className="lp-shimmer-text">Создайте сайт</span>{' '}
-                  с каталогом товаров из Excel за 10 минут
+                  с каталогом товаров из Excel{' '}
+                  <span className="lp-shimmer-text">за&nbsp;5&nbsp;минут</span>
                 </h1>
 
                 <p className="lp-slide-up lp-delay-2 mt-5 text-lg text-slate-400 leading-relaxed max-w-lg">
-                  Загружаете Excel → через 10 минут ваши товары видны в поиске
+                  Загружаете Excel → через 5 минут ваши товары видны в поиске
                   и доступны для заказа в Telegram. Без программистов и дизайнеров.
                 </p>
 
@@ -224,7 +225,7 @@ export default function HomePage() {
         <section className="bg-[#0D1225] border-y border-white/6 py-8">
           <div className="max-w-6xl mx-auto px-4 grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
             {[
-              { n: '10 мин', label: 'от прайса до сайта' },
+              { n: '5 мин', label: 'от прайса до сайта' },
               { n: '100%', label: 'SSR — Яндекс видит всё' },
               { n: '3', label: 'мессенджера для заказов' },
               { n: '152-ФЗ', label: 'данные в России' },
@@ -268,7 +269,7 @@ export default function HomePage() {
                   num: '02',
                   icon: <Zap size={22} />,
                   title: 'Каталог готов',
-                  desc: 'Через 10 минут работает yourname.price-on.ru с карточками, ценами, категориями и кнопками заказа.',
+                  desc: 'Через 5 минут работает yourname.price-on.ru с карточками, ценами, категориями и кнопками заказа.',
                 },
                 {
                   num: '03',
@@ -336,7 +337,7 @@ export default function HomePage() {
                   accent: 'text-emerald-400',
                   bg: 'bg-emerald-400/10',
                   title: 'Готово без программистов',
-                  desc: 'Никаких CMS, хостингов и разработчиков. Загрузили прайс — через 10 минут сайт работает. Обновили таблицу — каталог обновился.',
+                  desc: 'Никаких CMS, хостингов и разработчиков. Загрузили прайс — через 5 минут сайт работает. Обновили таблицу — каталог обновился.',
                   tag: 'Автоматизация',
                 },
                 {
@@ -431,7 +432,7 @@ export default function HomePage() {
                     'Клиент сам скачивает прайс в один клик',
                     'Товары в топе Яндекса по целевым запросам',
                     'Заявки приходят сами в Telegram/WhatsApp/MAX',
-                    'Готово за 10 минут — без разработчиков',
+                    'Готово за 5 минут — без разработчиков',
                   ].map((t) => (
                     <li key={t} className="flex items-start gap-2.5 text-sm text-slate-700">
                       <span className="mt-0.5 text-emerald-500 flex-shrink-0">✓</span>
