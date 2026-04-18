@@ -7,9 +7,9 @@ import {
 import { TARIFF_PRICES } from '@/types'
 
 export const metadata: Metadata = {
-  title: 'Price-on — оптовый каталог в Яндексе и Telegram за 10 минут',
+  title: 'Price-on — сайт-каталог из Excel за 10 минут для оптовых компаний',
   description:
-    'Загружаете Excel-прайс — получаете SEO-каталог который Яндекс индексирует, и Telegram Mini App для заказов. Для оптовых компаний РФ.',
+    'Создайте сайт с каталогом товаров из вашего прайса в Excel за 10 минут. SEO-каталог в Яндексе и Telegram Mini App для заказов. Без программистов.',
 }
 
 /* ── Маленькие переиспользуемые элементы ───────────────── */
@@ -169,9 +169,8 @@ export default function HomePage() {
                   className="lp-slide-up lp-delay-1 text-4xl sm:text-5xl font-extrabold text-white leading-[1.1] tracking-tight"
                   style={{ fontFamily: 'var(--font-syne)' }}
                 >
-                  Оптовый прайс,{' '}
-                  <span className="lp-shimmer-text">который&nbsp;находят</span>
-                  {' '}клиенты
+                  Создайте сайт с каталогом товаров из вашего прайса в Excel{' '}
+                  <span className="lp-shimmer-text">за&nbsp;10&nbsp;минут</span>
                 </h1>
 
                 <p className="lp-slide-up lp-delay-2 mt-5 text-lg text-slate-400 leading-relaxed max-w-lg">
