@@ -5,16 +5,17 @@ import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { ProductCard } from './ProductCard'
 import { slugify } from '@/lib/slugify'
-import type { Product } from '@/types'
+import type { Manager, Product } from '@/types'
 
 interface ProductGridProps {
   products: Product[]
   clientSlug: string
   categories: string[]
-  activeCategory?: string   // передаётся с SSR-страницы категории
+  activeCategory?: string
+  manager?: Manager | null
 }
 
-export function ProductGrid({ products, clientSlug, categories, activeCategory }: ProductGridProps) {
+export function ProductGrid({ products, clientSlug, categories, activeCategory, manager }: ProductGridProps) {
   const [search, setSearch] = useState('')
 
   const filtered = useMemo(() => {
@@ -80,7 +81,12 @@ export function ProductGrid({ products, clientSlug, categories, activeCategory }
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {filtered.map((product) => (
-            <ProductCard key={product.id} product={product} clientSlug={clientSlug} />
+            <ProductCard
+              key={product.id}
+              product={product}
+              clientSlug={clientSlug}
+              managerToken={manager?.token}
+            />
           ))}
         </div>
       )}

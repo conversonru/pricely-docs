@@ -46,6 +46,20 @@ export interface Product {
   updated_at: string
 }
 
+// ── Менеджер клиента ───────────────────────────────────────────────────────
+export interface Manager {
+  id: string
+  client_id: string
+  name: string
+  telegram: string | null
+  whatsapp: string | null
+  vk: string | null        // MAX
+  phone: string | null
+  token: string            // короткий уникальный токен для ссылки ?m=token
+  is_active: boolean
+  created_at: string
+}
+
 // ── Заказ (аналитика) ───────────────────────────────────────────────────────
 export type OrderStatus = 'new' | 'in_progress' | 'completed' | 'cancelled'
 

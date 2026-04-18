@@ -1,11 +1,13 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { getClientBySlug, getProductsByCategory, getCategories, getCategoryBySlug } from '@/lib/catalog'
+import { getClientBySlug, getProductsByCategory, getCategories, getCategoryBySlug, getManagerByToken } from '@/lib/catalog'
 import { ProductGrid } from '@/components/catalog/ProductGrid'
+import { ManagerBanner } from '@/components/catalog/ManagerBanner'
 import { slugify } from '@/lib/slugify'
 
 interface PageProps {
   params: Promise<{ clientSlug: string; category: string }>
+  searchParams: Promise<{ m?: string }>
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -34,8 +36,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export default async function CategoryPage({ params }: PageProps) {
+export default async function CategoryPage({ params, searchParams }: PageProps) {
   const { clientSlug, category: categorySlug } = await params
+  const { m: managerToken } = await searchParams
 
   const client = await getClientBySlug(clientSlug)
   if (!client) notFound()
@@ -43,20 +46,23 @@ export default async function CategoryPage({ params }: PageProps) {
   const categoryName = await getCategoryBySlug(client.id, categorySlug)
   if (!categoryName) notFound()
 
-  const [products, categories] = await Promise.all([
+  const [products, categories, manager] = await Promise.all([
     getProductsByCategory(client.id, categoryName),
     getCategories(client.id),
+    managerToken ? getManagerByToken(managerToken) : Promise.resolve(null),
   ])
 
   if (products.length === 0) notFound()
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-8">
+      {manager && <ManagerBanner manager={manager} />}
       <ProductGrid
         products={products}
         clientSlug={clientSlug}
         categories={categories}
         activeCategory={categoryName}
+        manager={manager}
       />
     </main>
   )

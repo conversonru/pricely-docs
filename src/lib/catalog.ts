@@ -1,6 +1,6 @@
 import 'server-only'
 import { createClient } from '@/lib/supabase/server'
-import type { Client, Product } from '@/types'
+import type { Client, Product, Manager } from '@/types'
 import { slugify } from '@/lib/slugify'
 
 export async function getClientBySlug(slug: string): Promise<Client | null> {
@@ -95,6 +95,21 @@ export async function getProductBySlug(
     return null
   }
   return data as Product
+}
+
+export async function getManagerByToken(token: string): Promise<Manager | null> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('managers')
+    .select('*')
+    .eq('token', token)
+    .eq('is_active', true)
+    .single()
+  if (error) {
+    if (error.code !== 'PGRST116') console.error('[catalog] getManagerByToken:', error.message)
+    return null
+  }
+  return data as Manager
 }
 
 export function buildWhatsAppUrl(phone: string, productName: string, sku: string): string {

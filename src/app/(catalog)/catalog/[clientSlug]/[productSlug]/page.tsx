@@ -2,12 +2,13 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { getClientBySlug, getProductBySlug } from '@/lib/catalog'
+import { getClientBySlug, getProductBySlug, getManagerByToken } from '@/lib/catalog'
 import { OrderButton } from '@/components/catalog/OrderButton'
 import { SchemaOrg } from '@/components/catalog/SchemaOrg'
 
 interface PageProps {
   params: Promise<{ clientSlug: string; productSlug: string }>
+  searchParams: Promise<{ m?: string }>
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -38,12 +39,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export default async function ProductPage({ params }: PageProps) {
+export default async function ProductPage({ params, searchParams }: PageProps) {
   const { clientSlug, productSlug } = await params
+  const { m: managerToken } = await searchParams
+
   const client = await getClientBySlug(clientSlug)
   if (!client) notFound()
 
-  const product = await getProductBySlug(client.id, productSlug)
+  const [product, manager] = await Promise.all([
+    getProductBySlug(client.id, productSlug),
+    managerToken ? getManagerByToken(managerToken) : Promise.resolve(null),
+  ])
   if (!product) notFound()
 
   const stockColor =
@@ -110,7 +116,7 @@ export default async function ProductPage({ params }: PageProps) {
 
             <p className={`font-medium ${stockColor}`}>{product.stock}</p>
 
-            <OrderButton client={client} product={product} />
+            <OrderButton client={client} product={product} manager={manager} />
 
             {product.description && (
               <div className="border-t pt-5">

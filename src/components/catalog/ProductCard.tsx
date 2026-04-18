@@ -7,9 +7,10 @@ import type { Product } from '@/types'
 interface ProductCardProps {
   product: Product
   clientSlug: string
+  managerToken?: string
 }
 
-export function ProductCard({ product, clientSlug }: ProductCardProps) {
+export function ProductCard({ product, clientSlug, managerToken }: ProductCardProps) {
   const stockColor =
     product.stock === 'В наличии'
       ? 'bg-green-100 text-green-800'
@@ -18,7 +19,7 @@ export function ProductCard({ product, clientSlug }: ProductCardProps) {
       : 'bg-red-100 text-red-800'
 
   return (
-    <Link href={`/catalog/${clientSlug}/${product.slug}`}>
+    <Link href={`/catalog/${clientSlug}/${product.slug}${managerToken ? `?m=${managerToken}` : ''}`}>
       <Card className="h-full hover:shadow-md transition-shadow cursor-pointer">
         <CardContent className="p-4 flex flex-col gap-3">
           {product.image_url ? (
