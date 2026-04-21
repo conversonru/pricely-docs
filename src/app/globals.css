@@ -184,6 +184,14 @@
   animation: lp-shimmer 4s linear infinite;
 }
 
+@keyframes lp-tap {
+  0%, 70%, 100% { transform: scale(1) translateY(0); opacity: 1; }
+  80%            { transform: scale(0.88) translateY(3px); opacity: 0.85; }
+  90%            { transform: scale(1.04) translateY(-1px); opacity: 1; }
+}
+.lp-tap { animation: lp-tap 3s ease-in-out infinite; }
+.lp-tap-delay { animation-delay: 2s; }
+
 .lp-card-hover {
   transition: transform 0.25s cubic-bezier(0.22,1,0.36,1), box-shadow 0.25s ease;
 }
