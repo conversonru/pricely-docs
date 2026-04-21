@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { Logo } from '@/components/Logo'
 
 export const metadata: Metadata = {
   title: 'Оферта и оплата — Price-on',
@@ -11,8 +12,8 @@ export default function OfferPage() {
 
   return (
     <main className="max-w-3xl mx-auto px-4 py-12">
-      <Link href="/" className="text-sm text-gray-500 hover:text-gray-700 mb-8 block">
-        ← На главную
+      <Link href="/" className="mb-8 block">
+        <Logo variant="dark" height={28} />
       </Link>
 
       <h1 className="text-3xl font-bold text-gray-900 mb-2">

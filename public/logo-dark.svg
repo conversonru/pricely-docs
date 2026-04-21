@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <text x="10" y="85" font-family="'DM Sans', 'Outfit', 'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="72" fill="#64748B">Price</text>
+  <g transform="translate(210, 30)">
+    <path d="M 12.5 14.5 A 32 32 0 1 0 51.5 14.5" fill="none" stroke="#F6A822" stroke-width="10" stroke-linecap="round"/>
+    <line x1="32" y1="-2" x2="32" y2="28" stroke="#F6A822" stroke-width="10" stroke-linecap="round"/>
+  </g>
+  <text x="290" y="85" font-family="'DM Sans', 'Outfit', 'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="72" fill="#F6A822">N</text>
+</svg>

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { Logo } from '@/components/Logo'
 import {
   ArrowRight, Search, MessageCircle, Zap, FileSpreadsheet,
   Shield, TrendingUp, Check, ChevronDown, Download, Send,
@@ -126,9 +127,7 @@ export default function HomePage() {
       {/* ══ NAV ══════════════════════════════════════════════ */}
       <header className="sticky top-0 z-50 bg-[#07091A]/90 backdrop-blur-md border-b border-white/6">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-          <span className="text-white font-bold text-lg tracking-tight" style={{ fontFamily: 'var(--font-syne)' }}>
-            Price<span className="text-amber-400">-on</span>
-          </span>
+          <Logo variant="light" height={32} />
           <nav className="hidden sm:flex items-center gap-6 text-sm text-slate-400">
             <a href="#how" className="hover:text-white transition-colors">Как работает</a>
             <a href="#benefits" className="hover:text-white transition-colors">Преимущества</a>
