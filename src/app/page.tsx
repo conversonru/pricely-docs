@@ -499,9 +499,9 @@ export default function HomePage() {
               </p>
               {/* Реквизиты — требование Точки */}
               <div className="mt-3 text-xs text-slate-600 space-y-0.5">
-                <p>ООО «Прайс-он» · ИНН: 0000000000</p>
-                <p>ОГРН: 0000000000000</p>
-                <p>Россия, г. Москва</p>
+                <p>ИП Кудряшов Андрей Николаевич</p>
+                <p>ИНН: 344406952308 · ОГРНИП: 319344300052539</p>
+                <p>400005, г. Волгоград, ул. Бакинская, д. 3, кв. 25</p>
                 <p><a href="mailto:info@price-on.ru" className="hover:text-slate-400 transition-colors">info@price-on.ru</a></p>
               </div>
             </div>
