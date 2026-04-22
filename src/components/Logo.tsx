@@ -33,7 +33,7 @@ export function Logo({ variant = 'light', height = 36, className }: LogoProps) {
           color: priceColor,
           fontWeight: 800,
           fontSize: `${fs}px`,
-          fontFamily: "var(--font-syne), sans-serif",
+          fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif",
           lineHeight: 1,
           letterSpacing: '-0.02em',
         }}
@@ -73,7 +73,7 @@ export function Logo({ variant = 'light', height = 36, className }: LogoProps) {
           color: '#F6A822',
           fontWeight: 800,
           fontSize: `${fs}px`,
-          fontFamily: "var(--font-syne), sans-serif",
+          fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif",
           lineHeight: 1,
           letterSpacing: '-0.02em',
         }}
