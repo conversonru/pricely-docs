@@ -1,7 +1,9 @@
 /**
- * Price ON logo — inline SVG component.
- * variant="light"  → white "Price" + amber "ON"  (for dark backgrounds)
- * variant="dark"   → slate "Price" + amber "ON"   (for light backgrounds)
+ * Price ON logo — HTML/CSS + inline SVG power-button icon.
+ * No SVG text → no font-rendering issues across environments.
+ *
+ * variant="light"  → white "Price" + amber "ON"  (dark backgrounds)
+ * variant="dark"   → slate  "Price" + amber "ON"  (light backgrounds)
  */
 interface LogoProps {
   variant?: 'light' | 'dark'
@@ -11,59 +13,73 @@ interface LogoProps {
 
 export function Logo({ variant = 'light', height = 36, className }: LogoProps) {
   const priceColor = variant === 'light' ? '#F8FAFC' : '#64748B'
-  const width = Math.round(height * (400 / 120))
+  const fs = Math.round(height * 0.8)          // font-size
+  const iconSize = Math.round(height * 0.68)   // power button svg size
+  const gap = Math.round(height * 0.06)        // gap between elements
 
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 400 120"
-      width={width}
-      height={height}
-      aria-label="Price ON"
+    <span
       className={className}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: `${gap}px`,
+        lineHeight: 1,
+      }}
     >
-      <text
-        x="10"
-        y="85"
+      {/* "Price" */}
+      <span
         style={{
-          fontFamily: "var(--font-syne), 'DM Sans', sans-serif",
+          color: priceColor,
           fontWeight: 800,
-          fontSize: 72,
+          fontSize: `${fs}px`,
+          fontFamily: "var(--font-syne), sans-serif",
+          lineHeight: 1,
+          letterSpacing: '-0.02em',
         }}
-        fill={priceColor}
       >
         Price
-      </text>
+      </span>
 
-      {/* Power button "O" */}
-      <g transform="translate(210, 30)">
+      {/* Power-button "O" — inline SVG, no text */}
+      <svg
+        width={iconSize}
+        height={iconSize}
+        viewBox="0 0 64 64"
+        fill="none"
+        aria-hidden="true"
+        style={{ flexShrink: 0, display: 'block' }}
+      >
+        {/* Arc: horseshoe opening at top */}
         <path
-          d="M 12.5 14.5 A 32 32 0 1 0 51.5 14.5"
-          fill="none"
+          d="M 15 17 A 23 23 0 1 0 49 17"
           stroke="#F6A822"
-          strokeWidth="10"
+          strokeWidth="7"
           strokeLinecap="round"
         />
+        {/* Vertical stem */}
         <line
-          x1="32" y1="-2" x2="32" y2="28"
+          x1="32" y1="3"
+          x2="32" y2="27"
           stroke="#F6A822"
-          strokeWidth="10"
+          strokeWidth="7"
           strokeLinecap="round"
         />
-      </g>
+      </svg>
 
-      <text
-        x="290"
-        y="85"
+      {/* "N" */}
+      <span
         style={{
-          fontFamily: "var(--font-syne), 'DM Sans', sans-serif",
+          color: '#F6A822',
           fontWeight: 800,
-          fontSize: 72,
+          fontSize: `${fs}px`,
+          fontFamily: "var(--font-syne), sans-serif",
+          lineHeight: 1,
+          letterSpacing: '-0.02em',
         }}
-        fill="#F6A822"
       >
         N
-      </text>
-    </svg>
+      </span>
+    </span>
   )
 }

@@ -490,9 +490,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex flex-col sm:flex-row justify-between items-start gap-8 mb-8">
             <div>
-              <span className="text-white font-bold text-lg" style={{ fontFamily: 'var(--font-syne)' }}>
-                Price<span className="text-amber-400">-on</span>
-              </span>
+              <Logo variant="light" height={28} />
               <p className="text-slate-500 text-sm mt-1 max-w-xs">
                 Онлайн-каталог из Excel для оптового бизнеса России
               </p>
